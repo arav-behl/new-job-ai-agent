@@ -30,6 +30,17 @@ def get_vectorstore(chunks):
     vectorstore = faiss.FAISS.from_texts(texts=chunks, embedding=embeddings)
     return vectorstore
 
+def get_conversationchain(vectorstore):
+    llm=ChatOpenAI(temperature=0.2)
+    memory = ConversationBufferMemory(memory_key='chat_history', 
+                                      return_messages=True,
+                                      output_key='answer') # using conversation buffer memory to hold past information
+    conversation_chain = ConversationalRetrievalChain.from_llm(
+                                llm=llm,
+                                retriever=vectorstore.as_retriever(),
+                                condense_question_prompt=CUSTOM_QUESTION_PROMPT,
+                                memory=memory)
+    return conversation_chain
 # Main Streamlit app function
 def main():
     load_dotenv()
